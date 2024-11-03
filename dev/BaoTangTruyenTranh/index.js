@@ -1438,7 +1438,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaoTangTruyenTranh = exports.BaoTangTruyenTranhInfo = exports.isLastPage = void 0;
 const types_1 = require("@paperback/types");
 const BaoTangTruyenTranhParser_1 = require("./BaoTangTruyenTranhParser");
-const DOMAIN = 'https://baotangtruyen19.com/';
+const DOMAIN = 'https://baotangtruyen20.com/';
 const isLastPage = ($) => {
     const pages = [];
     $("li", "ul.pagination").each((_, page) => {
@@ -1453,7 +1453,7 @@ const isLastPage = ($) => {
 };
 exports.isLastPage = isLastPage;
 exports.BaoTangTruyenTranhInfo = {
-    version: '1.0.15',
+    version: '1.0.16',
     name: 'BaoTangTruyenTranh',
     icon: 'icon.png',
     author: 'AlanNois',
@@ -1564,6 +1564,7 @@ class BaoTangTruyenTranh {
         const url = encodeURI(searchUrl);
         const $ = await this.DOMHTML(url);
         const tiles = this.parser.parseSearchResults($);
+        console.log(tiles);
         metadata = !(0, exports.isLastPage)($) ? { page: page + 1 } : undefined;
         return App.createPagedResults({
             results: tiles,
@@ -1605,6 +1606,7 @@ class BaoTangTruyenTranh {
                     section.items = this.parser.parseTransSection($);
                     break;
             }
+            console.log(section);
             sectionCallback(section);
         }
     }
@@ -1627,6 +1629,7 @@ class BaoTangTruyenTranh {
         const $ = await this.DOMHTML(url);
         const manga = this.parser.parseViewMore($);
         metadata = !(0, exports.isLastPage)($) ? { page: page + 1 } : undefined;
+        console.log(manga);
         return App.createPagedResults({
             results: manga,
             metadata,
