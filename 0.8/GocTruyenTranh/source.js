@@ -1441,7 +1441,7 @@ const GocTruyenTranhParser_1 = require("./GocTruyenTranhParser");
 const DOMAIN = 'https://goctruyentranhvui6.com/';
 const Auth = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJWxINuIEhvw6BuZyDEkGluaCIsImNvbWljSWRzIjpbXSwicm9sZUlkIjpudWxsLCJncm91cElkIjpudWxsLCJhZG1pbiI6ZmFsc2UsInJhbmsiOjAsInBlcm1pc3Npb24iOltdLCJpZCI6IjAwMDA1MjYzNzAiLCJ0ZWFtIjpmYWxzZSwiaWF0IjoxNzE1NDI0NDU3LCJlbWFpbCI6Im51bGwifQ.EjYw-HvoWM6RhbNzJkp06sSh61leaPcND0gb94PlDKeTYxfxU-f6WaxINAVjVYOP0pcVcG3YmfBVb4FVEBqPxQ';
 exports.GocTruyenTranhInfo = {
-    version: '1.1.10',
+    version: '1.1.11',
     name: 'GocTruyenTranh',
     icon: 'icon.png',
     author: 'AlanNois',
@@ -1701,7 +1701,7 @@ class Parser {
                     break;
             }
         });
-        const image = DOMAIN + $('.v-image > img').attr('src');
+        const image = $('.v-image > img').attr('src').indexOf('https') === -1 ? DOMAIN + $('.v-image > img').attr('src') : $('.v-image > img').attr('src');
         const desc = this.decodeHTMLEntity($('.v-card-text.pt-1.px-4.pb-4.text-secondary.font-weight-medium').text());
         const rating = parseFloat($('.pr-3 > b').text().trim());
         return App.createSourceManga({
@@ -1750,7 +1750,7 @@ class Parser {
         }
         else {
             for (const img of json.result.data) {
-                pages.push(DOMAIN + img);
+                pages.push(img.indexOf('https') === -1 ? DOMAIN + img : img);
             }
         }
         return pages;
@@ -1765,7 +1765,7 @@ class Parser {
             let mangaId = `${obj.nameEn}::${obj.id}`;
             tiles.push(App.createPartialSourceManga({
                 mangaId,
-                image: encodeURI(DOMAIN + image) ?? "",
+                image: encodeURI(image.indexOf('https') === -1 ? DOMAIN + image : image) ?? "",
                 title,
                 subtitle
             }));
@@ -1783,7 +1783,7 @@ class Parser {
             if (!collectedIds.includes(mangaId)) {
                 manga.push(App.createPartialSourceManga({
                     mangaId,
-                    image: encodeURI(DOMAIN + image) ?? "",
+                    image: encodeURI(image.indexOf('https') === -1 ? DOMAIN + image : image) ?? "",
                     title,
                     subtitle,
                 }));
