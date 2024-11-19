@@ -1441,7 +1441,7 @@ const GocTruyenTranhParser_1 = require("./GocTruyenTranhParser");
 const DOMAIN = 'https://goctruyentranhvui6.com/';
 const Auth = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJWxINuIEhvw6BuZyDEkGluaCIsImNvbWljSWRzIjpbXSwicm9sZUlkIjpudWxsLCJncm91cElkIjpudWxsLCJhZG1pbiI6ZmFsc2UsInJhbmsiOjAsInBlcm1pc3Npb24iOltdLCJpZCI6IjAwMDA1MjYzNzAiLCJ0ZWFtIjpmYWxzZSwiaWF0IjoxNzE1NDI0NDU3LCJlbWFpbCI6Im51bGwifQ.EjYw-HvoWM6RhbNzJkp06sSh61leaPcND0gb94PlDKeTYxfxU-f6WaxINAVjVYOP0pcVcG3YmfBVb4FVEBqPxQ';
 exports.GocTruyenTranhInfo = {
-    version: '1.1.9',
+    version: '1.1.10',
     name: 'GocTruyenTranh',
     icon: 'icon.png',
     author: 'AlanNois',
@@ -1504,7 +1504,7 @@ class GocTruyenTranh {
     }
     async getMangaDetails(mangaId) {
         const $ = await this.DOMHTML(`${DOMAIN}truyen/${mangaId.split('::')[0]}`);
-        return this.parser.parseMangaDetails($, mangaId);
+        return this.parser.parseMangaDetails($, mangaId, DOMAIN);
     }
     async getChapters(mangaId) {
         const json = await this.callAPI(`${DOMAIN}api/comic/${mangaId.split('::')[1]}/chapter?offset=0&limit=-1`);
@@ -1528,7 +1528,7 @@ class GocTruyenTranh {
         });
         const response = await this.requestManager.schedule(request, 1);
         const json = JSON.parse(response.data);
-        pages = this.parser.parseChapterDetails(json, null);
+        pages = this.parser.parseChapterDetails(json, null, DOMAIN);
         return App.createChapterDetails({
             id: chapterId,
             mangaId: mangaId,
@@ -1540,7 +1540,7 @@ class GocTruyenTranh {
         const tags = query.includedTags?.map(tag => tag.id) ?? [];
         const url = query.title ? encodeURI(`${DOMAIN}api/comic/search?name=${query.title}`) : `${DOMAIN}api/comic/search/category?p=${page}&value=${tags[0]}`;
         const json = await this.callAPI(url);
-        const tiles = this.parser.parseSearchResults(json);
+        const tiles = this.parser.parseSearchResults(json, DOMAIN);
         metadata = query.title ? undefined : { page: page + 1 };
         return App.createPagedResults({
             results: tiles,
@@ -1573,13 +1573,13 @@ class GocTruyenTranh {
             let json = await this.callAPI(url);
             switch (section.id) {
                 case 'hot':
-                    section.items = this.parser.parseViewMoreItems(json).slice(0, 10);
+                    section.items = this.parser.parseViewMoreItems(json, DOMAIN).slice(0, 10);
                     break;
                 case 'new_added':
-                    section.items = this.parser.parseViewMoreItems(json).slice(0, 10);
+                    section.items = this.parser.parseViewMoreItems(json, DOMAIN).slice(0, 10);
                     break;
                 case 'new_updated':
-                    section.items = this.parser.parseViewMoreItems(json).slice(0, 10);
+                    section.items = this.parser.parseViewMoreItems(json, DOMAIN).slice(0, 10);
                     break;
             }
             sectionCallback(section);
@@ -1602,7 +1602,7 @@ class GocTruyenTranh {
                 throw new Error("Requested to getViewMoreItems for a section ID which doesn't exist");
         }
         const json = await this.callAPI(url);
-        const tiles = this.parser.parseViewMoreItems(json);
+        const tiles = this.parser.parseViewMoreItems(json, DOMAIN);
         metadata = { page: page + 1 };
         return App.createPagedResults({
             results: tiles,
@@ -1680,7 +1680,7 @@ class Parser {
         }
         return time;
     }
-    parseMangaDetails($, mangaId) {
+    parseMangaDetails($, mangaId, DOMAIN) {
         const tags = [];
         $('.group-content a').each((_, obj) => {
             const label = $('span:nth-child(2)', obj).text().trim();
@@ -1701,7 +1701,7 @@ class Parser {
                     break;
             }
         });
-        const image = String($('.v-image > img').attr('src'));
+        const image = DOMAIN + $('.v-image > img').attr('src');
         const desc = this.decodeHTMLEntity($('.v-card-text.pt-1.px-4.pb-4.text-secondary.font-weight-medium').text());
         const rating = parseFloat($('.pr-3 > b').text().trim());
         return App.createSourceManga({
@@ -1738,7 +1738,7 @@ class Parser {
         }
         return chapters;
     }
-    parseChapterDetails(json, $) {
+    parseChapterDetails(json, $, DOMAIN) {
         const pages = [];
         if (json == null) {
             $('.image-section > .img-block > img').each((_, obj) => {
@@ -1750,12 +1750,12 @@ class Parser {
         }
         else {
             for (const img of json.result.data) {
-                pages.push(img);
+                pages.push(DOMAIN + img);
             }
         }
         return pages;
     }
-    parseSearchResults(json) {
+    parseSearchResults(json, DOMAIN) {
         const tiles = [];
         const array = json.result.data ?? json.result;
         for (let obj of array) {
@@ -1765,14 +1765,14 @@ class Parser {
             let mangaId = `${obj.nameEn}::${obj.id}`;
             tiles.push(App.createPartialSourceManga({
                 mangaId,
-                image: encodeURI(image) ?? "",
+                image: encodeURI(DOMAIN + image) ?? "",
                 title,
                 subtitle
             }));
         }
         return tiles;
     }
-    parseViewMoreItems(json) {
+    parseViewMoreItems(json, DOMAIN) {
         const manga = [];
         const collectedIds = [];
         for (let obj of json.result.data) {
@@ -1783,7 +1783,7 @@ class Parser {
             if (!collectedIds.includes(mangaId)) {
                 manga.push(App.createPartialSourceManga({
                     mangaId,
-                    image: encodeURI(image) ?? "",
+                    image: encodeURI(DOMAIN + image) ?? "",
                     title,
                     subtitle,
                 }));
