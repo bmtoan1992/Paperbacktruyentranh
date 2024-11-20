@@ -463,7 +463,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimTruyen3s = exports.TimTruyen3sInfo = exports.isLastPage = void 0;
 const types_1 = require("@paperback/types");
 const TimTruyen3sParser_1 = require("./TimTruyen3sParser");
-const DOMAIN = 'https://timtruyen3ss.com/';
+const DOMAIN = 'https://timtruyen3s.xyz/';
 const isLastPage = ($) => {
     const current = $('ul > .page-item.active > a').attr('data-page') ?? '';
     const last = $('ul > .page-item > a').last().attr('data-page');
@@ -474,7 +474,7 @@ const isLastPage = ($) => {
 };
 exports.isLastPage = isLastPage;
 exports.TimTruyen3sInfo = {
-    version: '1.0.2',
+    version: '1.0.3',
     name: 'TimTruyen3s',
     icon: 'icon.png',
     author: 'AlanNois',
